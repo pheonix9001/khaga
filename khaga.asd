@@ -8,7 +8,10 @@
   :depends-on (bordeaux-threads chanl)
   :components
   ((:module "src"
-    :components ((:file "actor"))))
+    :serial t
+    :components (
+      (:file "main")
+      (:file "thread-actor"))))
   :in-order-to ((test-op (test-op :khaga/tests))))
 
 (asdf:defsystem khaga/tests

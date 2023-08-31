@@ -19,20 +19,19 @@
   (kh:send-make (kh:addr-of act) 'count-up-msg))
 
 (test counter
-  (let* ((act (make-instance 'counter :init 0))
-         (addr (kh:spawn act)))
-    ; Technically unsafe since you should not access the value of an actor from another thread
-    ; but haha sleep go brrr
-    (is (= 0 (counter-val act)))
-    (kh:send-make addr 'count-up-msg)
-    (sleep 1)
-    (is (= 1 (counter-val act)))
-    (kh:send-make addr 'count-up-msg)
-    (kh:send-make addr 'count-up-msg)
-    (kh:send-make addr 'count-up-msg)
-    (sleep 1)
-    (is (= 4 (counter-val act)))
-    (kh:send-make addr 'count-up-2)
-    (kh:send-make addr 'count-up-2)
-    (sleep 1)
-    (is (= 8 (counter-val act)))))
+  ; Technically unsafe since you should not access the value of an actor from another thread
+  ; but haha sleep go brrr
+  (let ((*num-trials* 10))
+    (for-all ((a (gen-integer)))
+      (let* ((act (make-instance 'counter :init a))
+            (addr (kh:spawn act)))
+        (kh:send-make addr 'count-up-msg)
+        (sleep 0.1)
+        (is (= (1+ a) (counter-val act)))))
+
+    (for-all ((a (gen-integer)))
+      (let* ((act (make-instance 'counter :init a))
+            (addr (kh:spawn act)))
+        (kh:send-make addr 'count-up-2)
+        (sleep 0.1)
+        (is (= (+ 2 a) (counter-val act)))))))
